@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth-client";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { 
   Home, 
   CreditCard, 
@@ -62,7 +63,11 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="border-t p-3">
+      <div className="border-t p-3 space-y-2">
+        <div className="flex items-center justify-between px-3">
+          <span className="text-sm text-muted-foreground">Theme</span>
+          <ThemeToggle />
+        </div>
         <Button
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-foreground"

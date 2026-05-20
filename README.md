@@ -1,36 +1,199 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenLedger
 
-## Getting Started
+**Self-hostable, open-source personal finance tracker with AI-powered insights.**
 
-First, run the development server:
+![OpenLedger Banner](./docs/banner.png)
+
+---
+
+## 🌟 Features
+
+- **📊 Beautiful Dashboard** — Track spending with charts, category breakdowns, and monthly trends
+- **💳 Transaction Management** — Add, edit, and organize all your income and expenses
+- **📁 Multi-Account Support** — Manage checking, savings, credit cards, and more
+- **🏷️ Smart Categories** — Organize transactions with customizable categories and colors
+- **📥 CSV Import** — Bulk-import transactions from your bank with flexible column mapping
+- **🤖 AI Chat Assistant** — Ask questions in natural language and get instant financial insights
+- **🔒 Privacy First** — Self-host your data, no third-party tracking or cloud lock-in
+- **🌙 Dark Mode** — Beautiful interface in light and dark themes
+- **📱 Responsive** — Works perfectly on desktop, tablet, and mobile
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+ and npm
+- PostgreSQL 16+
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/openledger.git
+   cd openledger
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` and configure:
+   - `DATABASE_URL` — Your PostgreSQL connection string
+   - `ANTHROPIC_API_KEY` — Your Anthropic API key for AI chat (optional)
+
+4. Push the database schema:
+   ```bash
+   npm run db:push
+   ```
+
+5. Seed the database with demo data (optional):
+   ```bash
+   npm run db:seed
+   ```
+
+6. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+7. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+### Demo Credentials
+
+After running `npm run db:seed`, you can log in with:
+- **Email:** demo@openledger.app
+- **Password:** demo123
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Next.js 15 + React 19 + TypeScript
+- **UI:** Tailwind CSS + shadcn/ui
+- **Charts:** Recharts
+- **Backend:** Next.js API Routes + tRPC
+- **Database:** PostgreSQL + Drizzle ORM
+- **Auth:** Better Auth
+- **AI:** Vercel AI SDK + Anthropic Claude Sonnet
+
+---
+
+## 📖 Usage
+
+### Adding Transactions
+
+1. Navigate to **Transactions** → **New Transaction**
+2. Fill in the amount, date, description, account, and category
+3. Click **Create Transaction**
+
+### Importing from CSV
+
+1. Navigate to **Import**
+2. Upload your bank's CSV file
+3. Map the CSV columns to transaction fields
+4. Click **Import**
+
+### AI Chat
+
+Ask natural language questions like:
+- "How much did I spend on groceries last month?"
+- "What's my biggest expense category?"
+- "Show me my income vs expenses for the last 6 months"
+
+---
+
+## 🐳 Docker Deployment
+
+A `docker-compose.yml` file is included for easy deployment:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker-compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This will start both PostgreSQL and the OpenLedger app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧪 Testing
 
-## Learn More
+Run tests:
+```bash
+npm test
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📝 Development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Project Structure
 
-## Deploy on Vercel
+```
+openledger/
+├── app/                  # Next.js App Router pages
+│   ├── (app)/           # Protected app routes (dashboard, transactions, etc.)
+│   ├── (auth)/          # Auth pages (login, register)
+│   └── api/             # API routes (tRPC, chat)
+├── components/          # React components
+│   ├── ui/             # shadcn/ui components
+│   ├── charts/         # Chart components
+│   ├── chat/           # Chat components
+│   └── nav/            # Navigation components
+├── server/              # Backend code
+│   ├── db/             # Database schema and client
+│   ├── trpc/           # tRPC routers
+│   └── ai/             # AI tools and prompts
+├── lib/                 # Utility functions
+├── scripts/             # Seed and migration scripts
+└── docs/                # Documentation
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Available Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` — Start development server
+- `npm run build` — Build for production
+- `npm run start` — Start production server
+- `npm run db:push` — Push schema changes to database
+- `npm run db:seed` — Seed database with demo data
+- `npm run db:studio` — Open Drizzle Studio (database GUI)
+- `npm test` — Run tests
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting a PR.
+
+---
+
+## 📄 License
+
+MIT © 2026 OpenLedger
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org)
+- UI components from [shadcn/ui](https://ui.shadcn.com)
+- AI powered by [Anthropic Claude](https://anthropic.com)
+- Inspired by Mint, YNAB, and Copilot
+
+---
+
+## 🔗 Links
+
+- [Documentation](./docs/BUILD_PLAN.md)
+- [Issue Tracker](https://github.com/yourusername/openledger/issues)
+- [Live Demo](https://openledger-demo.vercel.app) *(coming soon)*
+
+---
+
+Made with ❤️ by developers, for developers.
