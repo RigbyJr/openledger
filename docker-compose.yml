@@ -4,7 +4,7 @@ services:
     container_name: openledger-db
     environment:
       POSTGRES_USER: openledger
-      POSTGRES_PASSWORD: openledger_dev_password
+      POSTGRES_PASSWORD: openledger_prod_password
       POSTGRES_DB: openledger
     ports:
       - "5432:5432"
@@ -15,6 +15,31 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - openledger
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openledger-app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://openledger:openledger_prod_password@postgres:5432/openledger
+      AUTH_SECRET: ${AUTH_SECRET:-change-this-in-production}
+      AUTH_URL: ${AUTH_URL:-http://localhost:3000}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - openledger
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+
+networks:
+  openledger:
