@@ -1,20 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useChat } from "@ai-sdk/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Message } from "@/components/chat/message";
 import { Send, Loader2 } from "lucide-react";
 
+const suggestions = [
+  "How much did I spend last month?",
+  "What's my biggest expense category?",
+  "Show my income vs expenses trend",
+];
+
 export default function ChatPage() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: "/api/chat",
-  });
+  const [input, setInput] = useState("");
+
+  const { messages, sendMessage, status } = useChat();
+
+  const isLoading = status === "submitted" || status === "streaming";
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const text = input.trim();
+
+    if (!text || isLoading) {
+      return;
+    }
+
+    setInput("");
+
+    try {
+      await sendMessage({ text });
+    } catch {
+      setInput(text);
+    }
+  };
+
+  const handleSuggestion = (text: string) => {
+    if (!isLoading) {
+      setInput(text);
+    }
+  };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
+    <div className="flex h-[calc(100vh-8rem)] flex-col">
       <div className="mb-4">
         <h1 className="text-3xl font-bold">AI Chat</h1>
         <p className="text-muted-foreground">
@@ -22,65 +54,57 @@ export default function ChatPage() {
         </p>
       </div>
 
-      <Card className="flex-1 flex flex-col">
-        {/* Messages Area */}
-        <CardContent className="flex-1 overflow-y-auto p-6 space-y-4">
+      <Card className="flex min-h-0 flex-1 flex-col">
+        <CardContent className="min-h-0 flex-1 space-y-4 overflow-y-auto p-6">
           {messages.length === 0 ? (
             <div className="flex h-full items-center justify-center">
-              <div className="text-center space-y-3">
-                <h3 className="text-lg font-semibold">Start a conversation</h3>
+              <div className="space-y-3 text-center">
+                <h3 className="text-lg font-semibold">
+                  Start a conversation
+                </h3>
+
                 <p className="text-sm text-muted-foreground">
                   Try asking:
                 </p>
-                <div className="mt-4 space-y-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      handleInputChange({
-                        target: { value: "How much did I spend last month?" },
-                      } as any);
-                    }}
-                  >
-                    How much did I spend last month?
-                  </Button>
-                  <br />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      handleInputChange({
-                        target: { value: "What's my biggest expense category?" },
-                      } as any);
-                    }}
-                  >
-                    What's my biggest expense category?
-                  </Button>
-                  <br />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      handleInputChange({
-                        target: { value: "Show my income vs expenses trend" },
-                      } as any);
-                    }}
-                  >
-                    Show my income vs expenses trend
-                  </Button>
+
+                <div className="mt-4 flex flex-col items-center gap-2">
+                  {suggestions.map((suggestion) => (
+                    <Button
+                      key={suggestion}
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={() => handleSuggestion(suggestion)}
+                      disabled={isLoading}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
                 </div>
               </div>
             </div>
           ) : (
             <>
-              {messages.map((message) => (
-                <Message
-                  key={message.id}
-                  role={message.role}
-                  content={message.content}
-                  timestamp={new Date(message.createdAt || Date.now())}
-                />
-              ))}
+              {messages.map((message) => {
+                const content = message.parts
+                  .filter((part) => part.type === "text")
+                  .map((part) => part.text)
+                  .join("");
+
+                if (!content) {
+                  return null;
+                }
+
+                return (
+                  <Message
+                    key={message.id}
+                    role={message.role === "user" ? "user" : "assistant"}
+                    content={content}
+                    timestamp={new Date()}
+                  />
+                );
+              })}
+
               {isLoading && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -91,17 +115,21 @@ export default function ChatPage() {
           )}
         </CardContent>
 
-        {/* Input Area */}
         <div className="border-t p-4">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <Input
               value={input}
-              onChange={handleInputChange}
+              onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about your finances..."
               disabled={isLoading}
               className="flex-1"
             />
-            <Button type="submit" disabled={isLoading || !input.trim()}>
+
+            <Button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              aria-label="Send message"
+            >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
