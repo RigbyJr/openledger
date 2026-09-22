@@ -3,11 +3,11 @@ import { streamText, tool } from "ai";
 import { auth } from "@/server/auth";
 import { tools } from "@/server/ai/tools";
 import { systemPrompt } from "@/server/ai/system-prompt";
+import type { z } from "zod";
 
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  // Get session
   const session = await auth.api.getSession({
     headers: await req.headers,
   });
@@ -18,15 +18,20 @@ export async function POST(req: Request) {
 
   const { messages } = await req.json();
 
-  // Convert tools to AI SDK format
-  const aiTools: any = {};
-  
+  const aiTools: Record<string, any> = {};
+
   for (const [name, toolDef] of Object.entries(tools)) {
+    const definition = toolDef as {
+      description: string;
+      parameters: z.ZodType;
+      execute: (params: unknown, userId: string) => Promise<unknown>;
+    };
+
     aiTools[name] = tool({
-      description: toolDef.description,
-      parameters: toolDef.parameters,
-      execute: async (params) => {
-        return await toolDef.execute(params, session.user.id);
+      description: definition.description,
+      inputSchema: definition.parameters,
+      execute: async (params: unknown) => {
+        return await definition.execute(params, session.user.id);
       },
     });
   }
@@ -36,8 +41,8 @@ export async function POST(req: Request) {
     system: systemPrompt,
     messages,
     tools: aiTools,
-    maxSteps: 5,
+    stopWhen: ({ steps }) => steps.length >= 5,
   });
 
-  return result.toDataStreamResponse();
+  return result.toTextStreamResponse();
 }
