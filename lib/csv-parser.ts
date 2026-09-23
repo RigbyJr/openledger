@@ -4,37 +4,6 @@ export interface CSVRow {
   [key: string]: string;
 }
 
-export interface CSVParseResult {
-  data: CSVRow[];
-  headers: string[];
-  errors: string[];
-}
-
-export function parseCSV(csvText: string): CSVParseResult {
-  const errors: string[] = [];
-
-  const result = Papa.parse<CSVRow>(csvText, {
-    header: true,
-    skipEmptyLines: true,
-    transformHeader: (header: string) => header.trim(),
-    error: (error: Error) => {
-      errors.push(error.message);
-    },
-  });
-
-  if (result.errors.length > 0) {
-    result.errors.forEach((err) => {
-      errors.push(`Row ${err.row}: ${err.message}`);
-    });
-  }
-
-  return {
-    data: result.data,
-    headers: result.meta.fields || [],
-    errors,
-  };
-}
-
 export interface FieldMapping {
   amount: string;
   date: string;
@@ -43,40 +12,82 @@ export interface FieldMapping {
   categoryId: string;
 }
 
-export function validateMapping(mapping: Partial<FieldMapping>): string[] {
-  const errors: string[] = [];
-
-  if (!mapping.amount) errors.push("Amount field is required");
-  if (!mapping.date) errors.push("Date field is required");
-  if (!mapping.description) errors.push("Description field is required");
-
-  return errors;
+export interface ParsedCSV {
+  headers: string[];
+  data: CSVRow[];
+  errors: string[];
 }
 
-export function mapRow(row: CSVRow, mapping: FieldMapping): {
-  amount: string;
+export function parseCSV(csvText: string): ParsedCSV {
+  let parsedData: CSVRow[] = [];
+  let parsedErrors: string[] = [];
+  let headers: string[] = [];
+
+  Papa.parse<CSVRow>(csvText, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (header) => header.trim(),
+    complete: (result) => {
+      parsedData = result.data;
+      parsedErrors = result.errors.map(
+        (error) => `Row ${error.row}: ${error.message}`
+      );
+
+      if (result.meta.fields) {
+        headers = result.meta.fields;
+      }
+    },
+    error: (error: Error) => {
+      parsedErrors.push(error.message);
+    },
+  });
+
+  return {
+    headers,
+    data: parsedData,
+    errors: parsedErrors,
+  };
+}
+
+export function mapRow(
+  row: CSVRow,
+  mapping: FieldMapping
+): {
+  amount: number;
   date: string;
   description: string;
   accountId: string;
   categoryId: string;
 } | null {
-  try {
-    const amount = row[mapping.amount]?.replace(/[$,]/g, "").trim() || "0";
-    const date = row[mapping.date]?.trim();
-    const description = row[mapping.description]?.trim() || "Unknown";
+  const amountValue = row[mapping.amount];
+  const dateValue = row[mapping.date];
+  const descriptionValue = row[mapping.description];
 
-    if (!date || !amount) {
-      return null;
-    }
-
-    return {
-      amount,
-      date,
-      description,
-      accountId: mapping.accountId,
-      categoryId: mapping.categoryId,
-    };
-  } catch {
+  if (!amountValue || !dateValue || !descriptionValue) {
     return null;
   }
+
+  const amount = Number(
+    amountValue.replace(/[$,\s]/g, "").replace(/[()]/g, (match) => {
+      return match === "(" ? "-" : "";
+    })
+  );
+
+  if (!Number.isFinite(amount)) {
+    return null;
+  }
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return {
+    amount,
+    date: dateValue,
+    description: descriptionValue.trim(),
+    accountId: mapping.accountId,
+    categoryId: mapping.categoryId,
+  };
 }
