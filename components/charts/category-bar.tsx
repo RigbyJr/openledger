@@ -23,7 +23,7 @@ export function CategoryBar({ data }: CategoryBarProps) {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
         <YAxis />
-       <<Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
+        <Tooltip formatter={(value) => `$${Number(value).toFixed(2)}`} />
         <Bar dataKey="amount" />
       </BarChart>
     </ResponsiveContainer>
