@@ -18,7 +18,7 @@ export function TrendLine({ data }: TrendLineProps) {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="month" />
         <YAxis />
-        <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+        <Tooltip formatter={(value) => `$${Number(value ?? 0).toFixed(2)}`} />
         <Legend />
         <Line type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={2} name="Income" />
         <Line type="monotone" dataKey="expenses" stroke="#ef4444" strokeWidth={2} name="Expenses" />
